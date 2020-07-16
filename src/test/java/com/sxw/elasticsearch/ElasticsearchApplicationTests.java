@@ -68,7 +68,7 @@ public class ElasticsearchApplicationTests {
         item.setBrand("苹果");
         item.setPrice(12999.0);
         item.setImages("https://www.apple.com/mac.png");
-        item.setCreateTime(new Date().getTime());
+        item.setCreateTime(new Date());
 
         Item item1 = new Item();
         item1.setId(2L);
@@ -77,7 +77,7 @@ public class ElasticsearchApplicationTests {
         item1.setBrand("马丁·福勒(Martin Fowler)");
         item1.setPrice(118.00);
         item1.setImages("http://product.dangdang.com/26913154.html");
-        item1.setCreateTime(new Date().getTime());
+        item1.setCreateTime(new Date());
 
         Item item2 = new Item();
         item2.setId(3L);
@@ -86,7 +86,7 @@ public class ElasticsearchApplicationTests {
         item2.setBrand("埃里克·马瑟斯（Eric Matthes）");
         item2.setPrice(61.40);
         item2.setImages("http://bang.dangdang.com/books/bestsellers/01.54.00.00.00.00-recent7-0-0-1-1");
-        item2.setCreateTime(new Date().getTime());
+        item2.setCreateTime(new Date());
 
         Item item3 = new Item();
         item3.setId(4L);
@@ -95,7 +95,7 @@ public class ElasticsearchApplicationTests {
         item3.setBrand("李舰");
         item3.setPrice(56.70);
         item3.setImages("http://product.dangdang.com/26915070.html");
-        item3.setCreateTime(new Date().getTime());
+        item3.setCreateTime(new Date());
 
         Item item4 = new Item();
         item4.setId(5L);
@@ -104,7 +104,7 @@ public class ElasticsearchApplicationTests {
         item4.setBrand("周志华");
         item4.setPrice(61.60);
         item4.setImages("http://product.dangdang.com/23898620.html");
-        item4.setCreateTime(new Date().getTime());
+        item4.setCreateTime(new Date());
 
         itemRepository.index(item);
         itemRepository.index(item1);
@@ -265,8 +265,6 @@ public class ElasticsearchApplicationTests {
        // item.setCategory("海关执法");
         Integer page = 0;
         Integer size = 100;
-        String start = "2020-05-01 11:28:00";
-        String end = "2020-07-16 11:28:00";
 
         // 校验参数
         if (null == page || page < 0)
@@ -289,22 +287,6 @@ public class ElasticsearchApplicationTests {
         }
 */
 
-      if (!StringUtils.isEmpty(start)) {
-            Date startTime = null;
-            startTime = DateUtils.parseDate(start, "yyyy-MM-dd HH:mm:ss");
-            if (null != startTime) {
-                boolQueryBuilder.must(QueryBuilders.rangeQuery("createTime").gt(startTime.getTime()));
-            }
-        }
-
-        if (!StringUtils.isEmpty(end)) {
-            Date endTime = null;
-            endTime = DateUtils.parseDate(end, "yyyy-MM-dd HH:mm:ss");
-            if (null != endTime) {
-                boolQueryBuilder.must(QueryBuilders.rangeQuery("createTime").lt(endTime.getTime()));
-            }
-        }
-
 
        /* RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery("createTime")
                 .format("yyyy-MM-dd HH:mm:ss")
@@ -320,14 +302,14 @@ public class ElasticsearchApplicationTests {
                 //.withFilter(rangeQueryBuilder)
                 .build();*/
         // page search
+        String start = "2020-05-01 11:28:00";
+        String end = "2020-07-16 11:28:00";
        if (!StringUtils.isEmpty(start)) {
-            boolQueryBuilder.must(QueryBuilders.rangeQuery("createTime").gt(getMills(start)));
+           boolQueryBuilder.must(QueryBuilders.rangeQuery("createTime").gte(start));
         }
         if (!StringUtils.isEmpty(end)) {
-            boolQueryBuilder.must(QueryBuilders.rangeQuery("createTime").lt(getMills(end)));
+            boolQueryBuilder.must(QueryBuilders.rangeQuery("createTime").lte(end));
         }
-        getMills(start);
-        getMills(end);
         // BoolQueryBuilder (Spring Query)
         SearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withPageable(pageable)
@@ -339,15 +321,13 @@ public class ElasticsearchApplicationTests {
 
         Page<Item> phoneModelPage = elasticsearchTemplate.queryForPage(searchQuery, Item.class);
         List<Item> results = phoneModelPage.getContent();
-        for(Item obj:results){
-            obj.setShowTime(millsToStr(obj.getCreateTime()));
-        }
+
         System.out.println(results);
 
     }
 
    public Date dateToStr(String date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         //DateFormat是抽象类 ，抽象类不可以直接创建对象，所以我们创建子类的对象
         Date d1 = null;//这个格式必须按照上面给出的格式进行转化否则出错
         try {
@@ -378,7 +358,7 @@ public class ElasticsearchApplicationTests {
             item.setBrand(i + "李舰");
             item.setPrice(56.70);
             item.setImages("http://product.dangdang.com/26915070.html");
-            item.setCreateTime(addDay(sdf.format(new Date()), i).getTime());
+            item.setCreateTime(addDay(sdf.format(new Date()), i));
             itemList.add(item);
         }
         this.bulkIndex(itemList);
@@ -459,7 +439,7 @@ public class ElasticsearchApplicationTests {
      */
     public long getMills(String dateTime) throws Exception{
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateTime));
+        calendar.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(dateTime));
         System.out.println(dateTime+":"+calendar.getTimeInMillis());
         return calendar.getTimeInMillis();
     }

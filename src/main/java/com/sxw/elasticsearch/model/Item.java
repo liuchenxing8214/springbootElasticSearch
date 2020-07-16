@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -14,6 +16,7 @@ import java.util.Date;
 @Data
 @Document(indexName = "item",type = "docs", shards = 5, replicas = 1)
 public class Item implements Serializable {
+    private static final long serialVersionUID = 4595806427619222455L;
     /**
      * @Description: @Id注解必须是springframework包下的
      * org.springframework.data.annotation.Id
@@ -54,9 +57,9 @@ public class Item implements Serializable {
     private String images;
 
      /* 数据抓取时间 */
-    //@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private long createTime;
+     @Field(type = FieldType.Date,format = DateFormat.custom, pattern ="yyyy-MM-dd HH:mm:ss")
+     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern ="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createTime;
 
     @Transient
     private String showTime;
